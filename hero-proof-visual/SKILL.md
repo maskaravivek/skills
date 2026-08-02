@@ -66,6 +66,40 @@ Comp the chosen shape (plus one alternate) as small rendered HTML mocks on one
 exploration page and get the founder's pick BEFORE writing production code.
 People decide from rendered comps, not descriptions.
 
+## Step 2.5 — Run the decision loop (hard-won lessons)
+
+Expect 2–3 feedback rounds. These patterns come from real iterations; skipping
+them costs a round each:
+
+- **Include the current design as a labeled baseline** in the exploration page.
+  Directions are judged relative to what exists, and "the current hero is
+  already good at X" is a legitimate outcome.
+- **Decompose praise into properties.** When the founder likes parts of several
+  directions ("A's layout, C's title, D's angle"), don't graft the pieces
+  together literally. Each direction bundles independent properties — ground
+  (light/dark), layout (centered/split), content (artifact/outcome/data), mood
+  (calm/dense) — and praise usually targets ONE of them. Liking a direction's
+  crisp headline does not mean liking its dark background. Restate which
+  property you think they liked; synthesize at the property level.
+- **Beware over-rotation.** Enthusiasm for a bold direction is not approval of
+  all its properties. If a synthesis changes something the founder never
+  commented on (e.g., flipping the page dark), flag it explicitly — don't let
+  it ride in as part of the package.
+- **One variable per round.** The round that converges is the one that holds
+  the hero shell (copy, headline, CTAs, ground) constant and renders 2–3
+  candidates for ONLY the visual slot. Compare like with like.
+- **Repeating the same artifact across cards/rows is a tell.** Three views of
+  one artifact reads as padding; three different artifacts at different stages
+  reads as a working product.
+- **Artifact-led vs outcome-led is a positioning question, not a design one.**
+  If buyers shop for results (traffic, citations, revenue) rather than the
+  artifact's intrinsic quality, the outcome must lead and the artifact appears
+  as the cause. Ask the founder which their buyers pay for before comping.
+- **Deep artifact showcases belong on a dedicated page.** If the founder loves
+  an immersive "here's a real example" concept but hesitates to lead with it,
+  give it its own route (e.g. `/example`) as the hero's secondary-CTA
+  destination instead of forcing it into the hero.
+
 ## Step 3 — Honesty rules (non-negotiable)
 
 These are what separate a proof object from marketing slop:
@@ -136,8 +170,48 @@ ticking up. This is powerful — it shows the product working — but has rules:
   arrives mid-cycle or with reduced motion sees the full proof, not a blank
   or partial panel.
 - Typing/cursor effects: at most one, short, never on the headline.
-- Keep it in CSS or a few lines of JS on transform/opacity/color; if it needs a
-  physics library, it's over-designed for this surface.
+
+### Choosing the animation stack
+
+Match the tool to the tier; every step up costs bundle size, SSR complexity,
+and maintenance. Start at the top of this list and move down only when the
+current level demonstrably can't express the design:
+
+1. **CSS transitions + keyframes** — the default, and enough for Tier 1 and
+   most of Tier 2 (staggers via `animation-delay` or custom properties, chip
+   state changes via class swaps + `transition`). Zero bytes, SSR-safe,
+   reduced-motion via one media query.
+2. **Web Animations API (WAAPI)** — when you need runtime orchestration
+   (sequencing a Tier 2 cycle, pausing between loops) without a dependency.
+   `element.animate()` + `Promise`-chained steps covers a running-pipeline
+   effect in ~30 lines.
+3. **Motion (Framer Motion) / vue-motion / solid-motion** — worth it in a
+   component-framework hero when choreography is genuinely multi-step:
+   variants propagating stagger to children, `useInView` triggers, layout
+   animations when a row is added mid-cycle. Import only the parts you use;
+   the hero should not ship >30–40kb of animation runtime. Ensure the
+   pre-hydration SSR frame shows the finished composition, not initial-hidden.
+4. **GSAP** — for timeline-heavy work: a long scroll-linked narrative (e.g., a
+   dedicated example/demo page where the document assembles as you scroll),
+   SplitText-style typographic choreography. Overkill for the hero panel
+   itself; right for the immersive companion page.
+5. **Lottie / Rive** — when a designer authors the motion as an asset
+   (schematic shapes with illustrative movement, animated connectors). Rive's
+   state machines suit interactive proof objects. Mind payload and make the
+   static poster frame the no-JS/reduced-motion fallback.
+6. **Three.js / React Three Fiber / WebGL shaders** — almost never for a proof
+   object; records don't need 3D. Legitimate only as a subtle atmospheric
+   backdrop behind the panel, and only if it degrades to a static gradient on
+   low-power devices and never competes with the panel for attention.
+7. **Remotion** — not a live-hero tool at all: it renders React to video. Use
+   it when you want an .mp4/.webm of the pipeline running (for social cards,
+   a demo embed, or a `<video>` fallback of a heavy animation) — authored with
+   the same component code, rendered offline.
+
+Regardless of stack: animate `transform`/`opacity`/`color` only, respect
+`prefers-reduced-motion` at the stack level (Motion's `useReducedMotion`,
+GSAP's `matchMedia`, or the CSS query), and keep the finished composition as
+the SSR/no-JS/poster state so the proof is never invisible.
 
 ## Step 6 — Accessibility and semantics
 
@@ -158,7 +232,18 @@ ticking up. This is powerful — it shows the product working — but has rules:
 3. If the hero changed polarity (dark → light or back), grep the codebase for
    assumptions tied to the old polarity: adaptive header section lists, button
    color overrides scoped to the hero's id, accent tokens that fail contrast on
-   the new ground.
-4. Reload with reduced motion enabled and with JS disabled: full composition
-   visible both times.
-5. Screenshot the final result for the founder before calling it done.
+   the new ground. These bugs hide in files you didn't edit.
+4. **Inspect reused image assets at their new display size.** A capture made
+   for a cover-cropped composition often has sliced text or UI baked into its
+   edges; at natural fit those torn edges become visible. Open the raw asset,
+   check its edges, and trim at display time (or re-capture) — don't assume an
+   asset that looked fine in its old context is clean.
+5. **Distinguish lazy-load gaps from missing images.** Below-the-fold images
+   report `naturalWidth: 0` and render blank in full-page screenshots until
+   scrolled into view. Before debugging a "broken" image, scroll to it and
+   re-check `img.complete` — and remember automated full-page screenshots
+   don't trigger native lazy loading.
+6. Reload with reduced motion enabled and with JS disabled: full composition
+   visible both times. If the animation stack is JS-driven, this is where
+   initial-hidden bugs surface.
+7. Screenshot the final result for the founder before calling it done.
