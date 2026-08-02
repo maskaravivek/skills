@@ -12,13 +12,23 @@ harnesses that load `SKILL.md`-based skills.
 
 ## Install
 
-Copy the skill folder you want into your agent's skills directory and restart the
-app (skills are typically loaded on startup).
+Clone the repo and copy the skill folder you want into your agent's skills
+directory, then restart the app (skills are typically loaded on startup):
 
-Common locations:
+```bash
+git clone https://github.com/maskaravivek/skills.git
 
-- Codex: `~/.codex/skills/<skill-name>/` (or `$CODEX_HOME/skills/<skill-name>/`)
-- Claude Code (all projects): `~/.claude/skills/<skill-name>/`
-- Claude Code (one project): `<repo>/.claude/skills/<skill-name>/`
+# Codex
+cp -r skills/gh-plan-to-issues ~/.codex/skills/
+
+# Claude Code, available in all projects
+cp -r skills/hero-proof-visual ~/.claude/skills/
+
+# Claude Code, single project only
+cp -r skills/hero-proof-visual <your-repo>/.claude/skills/
+```
+
+If `CODEX_HOME` is set, Codex loads skills from `$CODEX_HOME/skills/` instead of
+`~/.codex/skills/`.
 
 Each skill's own README/SKILL.md documents its requirements and usage.
