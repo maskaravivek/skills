@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Issue Planner"
+  short_description: "Plan high-quality GitHub issues and epics"
+  default_prompt: "Use $github-issue-planner to turn this plan into well-scoped GitHub issues and native epics."

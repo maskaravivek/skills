@@ -8,6 +8,7 @@ harnesses that load `SKILL.md`-based skills.
 | Skill | What it does |
 |---|---|
 | [`gh-plan-to-issues`](gh-plan-to-issues/) | Turn a plan/spec into GitHub Issues via `gh`: 1 epic + up to 10 linked task issues. Includes standalone scripts and a validator. |
+| [`github-issue-planner`](github-issue-planner/) | Turn plans, audits, PRDs, roadmaps, and findings into repository-aware GitHub issues, native epics, dependencies, labels, and readiness states. |
 | [`hero-proof-visual`](hero-proof-visual/) | Design and build a "proof object" hero visual for a product landing page: an outcome ledger, artifact cards, or cause→effect schematic that shows real output and outcome states instead of screenshots or invented stats. Covers composition, craft, honesty rules, and motion. |
 
 ## Install
@@ -31,4 +32,4 @@ cp -r skills/hero-proof-visual <your-repo>/.claude/skills/
 If `CODEX_HOME` is set, Codex loads skills from `$CODEX_HOME/skills/` instead of
 `~/.codex/skills/`.
 
-Each skill's own README/SKILL.md documents its requirements and usage.
+Each skill's `SKILL.md` documents its requirements and usage.
