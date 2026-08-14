@@ -1,4 +1,0 @@
-interface:
-  display_name: "GH plan -> issues"
-  short_description: "Create GitHub epic + tasks from a plan"
-  default_prompt: "Create GitHub issues from the plan in this thread: 1 epic and up to 10 tasks. Actually run `gh` commands to create the issues (do not output Markdown drafts or 'you can run these commands' unless the user explicitly asked for a dry-run). Link tasks to the epic (each task references the epic; epic contains a task checklist) and print the created issue URLs."
