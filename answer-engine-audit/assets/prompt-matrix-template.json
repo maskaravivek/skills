@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "locale": "en-US",
+  "samplingRules": {
+    "signedInState": "Record the actual state for every observation.",
+    "repeatCount": 3,
+    "engines": [
+      "Google standard web",
+      "Google AI Overview or AI Mode",
+      "ChatGPT Search",
+      "Perplexity",
+      "Bing Copilot",
+      "Claude search",
+      "Gemini"
+    ],
+    "interpretation": "A single generated answer is an observation, not a rank. Call visibility repeatable only when the same URL or entity outcome appears in at least two of three controlled samples.",
+    "intentRules": {
+      "discovery": "Unbranded, phrased the way someone who has never heard of the product would ask. The only intent that measures whether the product's content earns citations. Report this alone as the visibility number.",
+      "branded": "Names the product. Measures whether an engine describes it accurately when handed the name. A legitimate accuracy check, and never evidence of discovery. Never blend into a discovery rate.",
+      "baseline": "Unbranded and aimed at a competitor with no comparison page published against them yet. Records the before state so a later page has something to be measured against. Counts as discovery once the matching page ships and the prompt is relabelled in a version bump.",
+      "reporting": "Report the three intents separately, always. A single blended mention rate across intents is the defect this field exists to prevent."
+    }
+  },
+  "cohorts": [
+    {
+      "id": "example-cohort-replace-me",
+      "prompts": [
+        {
+          "text": "Replace with a real unbranded buyer question, worded the way someone who has never heard of the product would ask it.",
+          "intent": "discovery"
+        },
+        {
+          "text": "Replace with a second real unbranded buyer question for this same cohort.",
+          "intent": "discovery"
+        },
+        {
+          "text": "Optional: replace with a question that names the product directly, to check accuracy rather than discovery.",
+          "intent": "branded"
+        },
+        {
+          "text": "Optional: replace with an unbranded question aimed at a competitor the product has no comparison page against yet.",
+          "intent": "baseline"
+        }
+      ],
+      "firstPartyEvidence": [
+        "https://example.com/the-page-that-should-answer-this"
+      ]
+    }
+  ]
+}

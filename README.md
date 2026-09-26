@@ -7,6 +7,7 @@ harnesses that load `SKILL.md`-based skills.
 
 | Skill | What it does |
 |---|---|
+| [`answer-engine-audit`](answer-engine-audit/) | Diagnose why ChatGPT, Claude, Gemini, Perplexity, or Google AI Overview recommend a competitor instead of you. Runs a controlled prompt-matrix sampling round across AI answer engines, records who gets mentioned/cited/linked, classifies whether a citation slot even exists, and diffs the winning page against your closest page to extract the exact facts and pages you're missing. |
 | [`github-issue-planner`](github-issue-planner/) | Turn plans, audits, PRDs, roadmaps, and findings into repository-aware GitHub issues, native epics, dependencies, labels, and readiness states. |
 | [`hero-proof-visual`](hero-proof-visual/) | Design and build a "proof object" hero visual for a product landing page: an outcome ledger, artifact cards, or cause→effect schematic that shows real output and outcome states instead of screenshots or invented stats. Covers composition, craft, honesty rules, and motion. |
 
