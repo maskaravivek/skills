@@ -18,25 +18,34 @@ the two hid a real gap the last time this was tried).
 
 The prompt matrix is the one artifact this whole workflow depends on being
 *stable* across audits — a round is only comparable to the last one if it asked
-the same questions the same way. So the matrix belongs checked into the product's
-own repo, not rebuilt from scratch (or from memory) every time someone runs this
-skill.
+the same questions the same way. Get this wrong on the first run and every future
+round inherits the mistake, so this step is a conversation with the user, not
+something to draft and commit alone. Nothing in setup gets written to the repo
+until the user has seen and confirmed it — the same way a build plan gets
+approved before code gets written, or a set of eval questions gets shown to the
+user before a test run starts. If you can't ask (a fully autonomous run with no
+user available), say explicitly in your output that the matrix was drafted
+without review and should be checked before the next round relies on it.
 
 1. **Find out if a matrix already exists** before writing one. Look for something
    like `docs/analytics/*prompt-matrix*.json`, `docs/aeo/`, `docs/geo/`, or ask the
-   user. If one exists, skip to the Workflow below and reuse it — adding a cohort
-   or relabelling a `baseline` prompt to `discovery` (once a matching page ships)
-   is a version bump, not a rewrite. Never reword an existing prompt just because
-   this is a new session; that silently starts a new, incomparable series.
-2. **If none exists, create it from `assets/prompt-matrix-template.json`.** Put it
-   somewhere durable in the product's repo (e.g. `docs/aeo/prompt-matrix.json`) —
-   ask the user where their project keeps this kind of tracked, versioned data if
-   there's no obvious convention yet. Commit it; it is meant to outlive this
-   session.
-3. **Fill `cohorts` with the product's real buyer questions**, 8-12 to start,
-   grouped by topic. Pull them from sales calls, support tickets, or by asking the
-   last 5 customers what they searched before they paid — never from what you
-   assume buyers ask. Tag every question with an **intent**:
+   user directly. If one exists, tell the user you found it and confirm it's still
+   the right one to extend before reusing it — adding a cohort or relabelling a
+   `baseline` prompt to `discovery` (once a matching page ships) is a version
+   bump, not a rewrite. Never reword an existing prompt just because this is a new
+   session; that silently starts a new, incomparable series.
+
+2. **If none exists, ask before inventing questions.** Ask the user for their
+   real sources — sales call notes, support tickets, or a quick "what did your
+   last 5 customers search before they paid?" Never write cohorts and questions
+   from what you assume buyers ask; if the user has no time to gather sources
+   right now, say so plainly rather than filling the gap with guesses, and mark
+   whatever you draft as unvalidated.
+
+3. **Draft the matrix as a proposal, not a final file.** Using
+   `assets/prompt-matrix-template.json` as the shape, draft cohorts and
+   questions from what the user gave you, and show the full draft back to them —
+   every question, grouped by cohort, each tagged with an intent:
 
    | Intent | What it is | What it measures |
    | --- | --- | --- |
@@ -44,12 +53,22 @@ skill.
    | `branded` | Names the product. | Whether an engine describes the product accurately when handed the name. Never counts as discovery. |
    | `baseline` | Unbranded, aimed at a competitor with no comparison page published against them yet. | The before-state, so a later page has something to be measured against. Expected to score zero — record the zero, don't drop the prompt. |
 
-4. **Also pick where observation write-ups will live** (e.g.
-   `docs/aeo/observations/`), so every future round appends to the same place and
-   past rounds stay easy to diff against.
+   Ask the user to correct wording, add or drop questions, and check every
+   intent tag — a question mistagged `discovery` when it's actually `branded`
+   corrupts the one number this whole workflow produces. Don't proceed on a
+   partial or implied yes; wait for them to actually look at the list.
 
-Once the matrix and the observations folder exist, every future audit starts
-directly at Workflow step 1 below — no setup to repeat.
+4. **Ask where this should live in their repo**, both the matrix file (e.g.
+   `docs/aeo/prompt-matrix.json`) and the observations write-ups (e.g.
+   `docs/aeo/observations/`) — propose a path if they have no existing
+   convention, but let them confirm or redirect it before you commit anything.
+   Only write and commit the matrix once the user has signed off on both the
+   questions and the location.
+
+Once the matrix and the observations folder exist and are confirmed, every
+future audit starts directly at Workflow step 1 below — no setup to repeat,
+unless the user wants to add a cohort or relabel a prompt, which is a small,
+same-conversation confirmation rather than the full setup again.
 
 ## Workflow
 
@@ -125,3 +144,7 @@ write-up in the observations folder chosen during setup.
 - **Never infer what an engine didn't show.** Record `domainSlotObserved` only when
   the engine visibly displays the domain or query it searched, and leave
   `retrievalTrace` empty rather than reconstructing it from the answer's content.
+- **Never commit a prompt matrix the user hasn't seen.** It's the one artifact
+  every future round depends on being right; drafting it alone and writing it
+  straight to the repo trades a five-minute review for audits that quietly
+  measure the wrong questions for months.
