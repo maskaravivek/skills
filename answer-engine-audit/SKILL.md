@@ -14,26 +14,46 @@ reporting one blended "mention rate" across questions that name the product and
 questions that don't (a branded question tests recall, not discovery, and blending
 the two hid a real gap the last time this was tried).
 
+## Setup (once per product, not once per audit)
+
+The prompt matrix is the one artifact this whole workflow depends on being
+*stable* across audits — a round is only comparable to the last one if it asked
+the same questions the same way. So the matrix belongs checked into the product's
+own repo, not rebuilt from scratch (or from memory) every time someone runs this
+skill.
+
+1. **Find out if a matrix already exists** before writing one. Look for something
+   like `docs/analytics/*prompt-matrix*.json`, `docs/aeo/`, `docs/geo/`, or ask the
+   user. If one exists, skip to the Workflow below and reuse it — adding a cohort
+   or relabelling a `baseline` prompt to `discovery` (once a matching page ships)
+   is a version bump, not a rewrite. Never reword an existing prompt just because
+   this is a new session; that silently starts a new, incomparable series.
+2. **If none exists, create it from `assets/prompt-matrix-template.json`.** Put it
+   somewhere durable in the product's repo (e.g. `docs/aeo/prompt-matrix.json`) —
+   ask the user where their project keeps this kind of tracked, versioned data if
+   there's no obvious convention yet. Commit it; it is meant to outlive this
+   session.
+3. **Fill `cohorts` with the product's real buyer questions**, 8-12 to start,
+   grouped by topic. Pull them from sales calls, support tickets, or by asking the
+   last 5 customers what they searched before they paid — never from what you
+   assume buyers ask. Tag every question with an **intent**:
+
+   | Intent | What it is | What it measures |
+   | --- | --- | --- |
+   | `discovery` | Unbranded, phrased the way someone who has never heard of the product would ask. | Whether the product's content earns citations. **This is the only visibility number.** |
+   | `branded` | Names the product. | Whether an engine describes the product accurately when handed the name. Never counts as discovery. |
+   | `baseline` | Unbranded, aimed at a competitor with no comparison page published against them yet. | The before-state, so a later page has something to be measured against. Expected to score zero — record the zero, don't drop the prompt. |
+
+4. **Also pick where observation write-ups will live** (e.g.
+   `docs/aeo/observations/`), so every future round appends to the same place and
+   past rounds stay easy to diff against.
+
+Once the matrix and the observations folder exist, every future audit starts
+directly at Workflow step 1 below — no setup to repeat.
+
 ## Workflow
 
-### 1. Build the prompt matrix
-
-Pull 8-12 real buyer questions — from sales calls, support tickets, or by asking
-the last 5 customers what they searched before they paid. Do not write questions
-from what you assume buyers ask; use what they actually typed or said.
-
-Tag every question with an **intent** before sampling anything:
-
-| Intent | What it is | What it measures |
-| --- | --- | --- |
-| `discovery` | Unbranded, phrased the way someone who has never heard of the product would ask. | Whether the product's content earns citations. **This is the only visibility number.** |
-| `branded` | Names the product. | Whether an engine describes the product accurately when handed the name. Never counts as discovery. |
-| `baseline` | Unbranded, aimed at a competitor with no comparison page published against them yet. | The before-state, so a later page has something to be measured against. Expected to score zero — record the zero, don't drop the prompt. |
-
-Copy `assets/prompt-matrix-template.json` and fill in `cohorts` for the product's
-own question groups. Keep the schema exactly — the recording step depends on it.
-
-### 2. Sample each question 3 times per engine
+### 1. Sample each question 3 times per engine
 
 Ask every prompt exactly as written — rewording it mid-round starts a new series,
 and inserting the product's name into a `discovery` or `baseline` prompt to "help"
@@ -44,7 +64,7 @@ standard web as a control) three times each, using a fresh session per cohort
 where the engine allows it. A single-engine or single-cohort round is legitimate;
 just say which engines or cohorts were skipped instead of implying full coverage.
 
-### 3. Record every observation with the fixed schema
+### 2. Record every observation with the fixed schema
 
 One generated answer is one row, not a rank. Read
 `references/recording-schema.md` for the exact columns and how to fill the fields
@@ -56,7 +76,7 @@ between rounds makes the whole round incomparable to the last one.
 Call an outcome repeatable only when the same URL or entity result appears in at
 least 2 of the 3 samples for that prompt/engine pair.
 
-### 4. Classify what you lost to
+### 3. Classify what you lost to
 
 For every cited URL on a question the product didn't win, open it and label the
 page type: comparison page, listicle, forum/community thread, docs page, review
@@ -64,7 +84,7 @@ site, or something else. This is the fastest way to see a pattern across losses 
 "we lose to Reddit threads on pricing questions" is a different fix than "we lose
 to a competitor's comparison page."
 
-### 5. Diff every loss against the page that won
+### 4. Diff every loss against the page that won
 
 For each question the product lost, take the URL that won and the product's own
 closest page on that topic, and run this exact prompt against both (Claude or
@@ -79,14 +99,15 @@ a list of the specific facts, numbers, and structural choices the losing page is
 missing. Most rounds turn up 5-6 pages the product doesn't have yet, not tweaks to
 pages it already has.
 
-### 6. Report the round
+### 5. Report the round
 
 Always split every rate by intent — discovery, branded, baseline, never blended —
 and compare each intent only against the same intent in an earlier round. State up
 front which engines and cohorts were sampled (and which were skipped), the
 locale/device/signed-in state per observation, and the discovery/branded/baseline
 counts separately. Close with the concrete output: the pages to write, and the
-specific facts each one needs to include based on the diffs from step 5.
+specific facts each one needs to include based on the diffs from step 4. Save the
+write-up in the observations folder chosen during setup.
 
 ## Non-negotiable rules
 
