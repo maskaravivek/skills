@@ -9,6 +9,10 @@ Recover as much authorized, disposable storage as practical, carry cleanup throu
 
 ## Setup
 
+When the user points at this folder or its repository URL and asks to install/set up the skill, read [readme.md](readme.md) and complete setup on their Mac. Obtain the whole folder (including scripts and references) if only a URL was provided. For Codex, use `~/.agents/skills/mac-space-cleanup`; honor an existing configured skills location instead of creating a duplicate. For Claude Code, use `~/.claude/skills/mac-space-cleanup`. Copy from the source folder only if it is not already installed; inspect and preserve local modifications before updating an existing copy. Resolve helper paths against the installed folder and tell the user to reload/restart if discovery needs it. Setup requires local macOS shell access; a remote/cloud session must report that limitation.
+
+Preview tools with the setup helper, then write the local profile. Preserve existing preferences, configure Android roots the user supplied or clearly identified in their workspace, and ask only when the project scope is ambiguous. Android setup can be deferred while installing the skill and checking tools. An explicit setup request that includes installing Mole authorizes `--install-mole` through existing Homebrew. Installing the skill does not authorize cleanup; stop after setup unless cleanup was also requested.
+
 For first-time setup or missing configuration, read [readme.md](readme.md). `python3 scripts/setup.py --dry-run` detects available tools and previews the local profile. Run setup with the user's chosen Android roots and emulator when setup is requested. It preserves existing profile fields; specify `--install-mole` only when the user authorizes installing Mole. Do not install Docker or unrelated ecosystems just because cleanup tools are absent. If setup is unnecessary, proceed directly to the workflow.
 
 ## Scope and authorization

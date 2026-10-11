@@ -1,146 +1,50 @@
 # Mac Space Cleanup
 
-An agent skill for reclaiming macOS storage with Mole and native developer tools.
-It measures actual disk recovery, finds large areas that generic cleaners miss,
-and carries authorized cleanup through completion.
+Reclaim Mac storage with Mole and native tools: Docker, package/Gradle caches,
+editor downloads, disposable build files and stale Codex/Claude/other agent
+workspaces and worktrees. Measures actual disk recovery.
 
-## What it does
+**Always leaves iCloud untouched.** Preserves active work, unique changes,
+history, databases and Docker volumes. Keeps the Android SDK packages your
+selected apps need and one usable emulator.
 
-- Uses Mole for general caches and project build artifacts.
-- Supplements Mole with Docker image/build-cache pruning, package caches,
-  Gradle caches, editor update downloads and disposable temporary files.
-- Reviews stale agent workspaces and Git worktrees while preserving unique work.
-- Reads your Android projects' current build requirements and retains the SDK,
-  Build Tools, NDK and CMake versions they need, plus one usable emulator.
-- Compares before/after APFS free capacity and reports recovered GB/GiB, actions,
-  skips and any limitations.
+## Let your agent set it up
 
-**iCloud is always excluded**, including local download eviction and sync settings.
-Running workloads, source files, databases, Docker volumes and user history are
-preserved unless the user explicitly authorizes a specific deletion. An audit
-request performs no cleanup. Model deletion and whole-workspace deletion are
-conditional, not automatic defaults.
+Give local Codex or Claude Code this folder/link and ask:
 
-This is an agent workflow, not a standalone unattended cleaner. The included
-Python scripts configure a local profile and collect read-only measurements;
-cleanup decisions and execution are handled by the agent.
+> Read mac-space-cleanup/SKILL.md, install this skill for my agent and set it up
+> on this Mac. Preview available tools, configure my Android projects if relevant,
+> and install Mole if missing and Homebrew is available. Do not run cleanup yet.
 
-## Install
+The agent can download/copy the folder and run the included setup helper.
+Opening the folder alone does not install it. Requires macOS, Python 3 and an
+agent with local file/shell access; a cloud session cannot clean your Mac.
 
-Requires macOS, Python 3 and an agent that loads `SKILL.md` skills. Mole is
-recommended; Docker and other developer tools are used only when installed and
-relevant. This skill does not require paid software or a connector.
+## Manual setup
 
-From the cloned repository:
+Copy this folder into your agent's personal skills directory:
 
-```sh
-# Codex
-mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
-cp -R mac-space-cleanup "${CODEX_HOME:-$HOME/.codex}/skills/"
+- Codex: `~/.agents/skills/mac-space-cleanup/`
+- Claude Code: `~/.claude/skills/mac-space-cleanup/`
 
-# Or Claude Code, available across projects
-mkdir -p ~/.claude/skills
-cp -R mac-space-cleanup ~/.claude/skills/
-```
-
-Reload your agent's skills or restart its app if the new skill is not visible.
-The workflow uses ordinary shell tools. Codex-managed worktree tools are optional;
-other agents can use Git for ordinary worktrees and leave managed checkouts alone
-when ownership cannot be established.
-
-## Setup
-
-Run these from the installed skill folder or `mac-space-cleanup` in this repository.
-Preview tool availability and profile changes:
+Reload/restart the agent if needed. From the skill folder:
 
 ```sh
 python3 scripts/setup.py --dry-run
-```
-
-Create/update a local profile for your Android apps:
-
-```sh
-python3 scripts/setup.py \
-  --android-project ~/Projects/app-one/android \
-  --android-project ~/Projects/app-two/android
-```
-
-Pass Android **Gradle root directories** containing `settings.gradle` or
-`settings.gradle.kts`. Supplying project flags replaces the configured project
-list with those paths. Omitting them preserves the existing list. Other existing
-profile fields are preserved.
-
-Optionally select the existing emulator you want retained:
-
-```sh
-python3 scripts/setup.py --preferred-avd My_API_36_Device
-```
-
-Without a preferred device, the agent chooses a running compatible device or the
-newest stable compatible device. If no emulator exists, cleanup does not create
-one. SDK requirements are derived each run; versions are not pinned in the
-profile. Multiple NDK versions can remain when different apps require them.
-
-The profile lives at:
-
-```text
-${XDG_CONFIG_HOME:-$HOME/.config}/mac-space-cleanup/profile.json
-```
-
-Keep it outside iCloud and outside the shared skill folder. It contains local
-project paths and emulator preferences and should not be committed/shared.
-`--config-dir` overrides the location for testing; the skill's workflow reads the
-standard location, so a custom location must also be supplied to the agent.
-
-Mole can be installed explicitly through existing Homebrew:
-
-```sh
+# Optional: configure Android Gradle roots and an existing emulator
+python3 scripts/setup.py --android-project ~/Projects/my-app/android --preferred-avd My_Emulator
+# Optional: install Mole using existing Homebrew
 python3 scripts/setup.py --install-mole
 ```
 
-Setup never runs cleanup. Without `--install-mole`, it never installs software.
-With `--dry-run`, it neither writes configuration nor installs anything. Docker,
-SDKs, Python package tools and Homebrew itself are never auto-installed.
+Setup never runs cleanup. Preferences stay in
+`${XDG_CONFIG_HOME:-$HOME/.config}/mac-space-cleanup/profile.json`, outside the
+shared skill. Android project flags replace the project list; omit them to keep it.
+Other cleanup tools are used when installed; setup does not install them or Homebrew.
 
 ## Use
 
-Example prompts:
-
-> Use $mac-space-cleanup to reclaim as much disposable space as possible on my Mac.
-
-> Use $mac-space-cleanup for a read-only storage audit and rank cleanup candidates.
-
-> Clean caches and unused Android packages; keep the apps in my local profile and one emulator.
-
-For agents without `$skill-name` invocation syntax, ask them to load this skill's
-`SKILL.md` and follow it.
-
-The snapshot helper can also be used directly:
-
-```sh
-python3 scripts/storage_snapshot.py --output /tmp/mac-space-before.json
-# After authorized cleanup:
-python3 scripts/storage_snapshot.py \
-  --compare /tmp/mac-space-before.json --output /tmp/mac-space-after.json
-```
-
-Choose fresh paths; snapshots do not overwrite files. Docker's internal reclaimed
-space, sparse disk-file sizes and summed APFS clone sizes can differ from the
-actual increase in host free space. Other workloads and swap can also change the
-before/after result.
-
-For weekly use, configure your agent's scheduler to invoke the skill on your Mac
-with its local profile. The skill does not install a background job itself. Tell
-the scheduler to preserve active work and notify after meaningful recovery,
-failures or required decisions.
-
-## Files
-
-- `SKILL.md`: workflow, authorization scope and portable defaults.
-- `references/cleanup-recipes.md`: native commands and Android retention procedure.
-- `scripts/setup.py`: local setup and optional Mole installation.
-- `scripts/storage_snapshot.py`: read-only APFS/storage measurement.
-- `agents/openai.yaml`: Codex skill metadata.
-
-Tool references: [Mole CLI](https://github.com/tw93/Mole) and
-[Docker pruning documentation](https://docs.docker.com/reference/cli/docker/system/prune/).
+Ask: **“Use mac-space-cleanup to clean my Mac”** or **“Run a read-only storage audit.”**
+For weekly cleanup, have your agent's local scheduler invoke the skill.
+See [SKILL.md](SKILL.md) for the workflow and
+[cleanup recipes](references/cleanup-recipes.md) for tool-specific details.
