@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mac Space Cleanup"
+  short_description: "Reclaim Mac storage with Mole and developer tools"
+  default_prompt: "Use $mac-space-cleanup to reclaim as much space as possible on my Mac and verify the result."
